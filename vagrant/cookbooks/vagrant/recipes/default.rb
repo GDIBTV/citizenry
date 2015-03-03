@@ -18,6 +18,11 @@ execute "update-apt" do
   end
 end
 
+# Install packages
+for name in %w[nfs-common git-core screen tmux elinks build-essential libcurl4-openssl-dev libsqlite3-dev mysql-server libmysqlclient-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev sphinxsearch imagemagick make]
+  package name
+end
+
 # Install a modern Ruby version
 execute "Create Temp Dir" do
   command "mkdir -p #{TEMP_DIR}"
@@ -58,11 +63,6 @@ for name in %w[irb ruby-dev]
   package name do
     action :remove
   end
-end
-
-# Install packages
-for name in %w[nfs-common git-core screen tmux elinks build-essential libcurl4-openssl-dev libsqlite3-dev mysql-server libmysqlclient-dev libxml2 libxml2-dev libxslt1.1 libxslt1-dev sphinxsearch imagemagick]
-  package name
 end
 
 # Install gems
