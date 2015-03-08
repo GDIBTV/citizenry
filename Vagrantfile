@@ -1,59 +1,75 @@
-# You can override settings in this file by creating a `Vagrantfile.local`
-# file, see the `VAGRANT.md` file for instructions.
-overrides = "#{__FILE__}.local"
-if File.exist?(overrides)
-    eval File.read(overrides)
-end
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
-Vagrant::Config.run do |config|
-  # All Vagrant configuration is done here. The most common configuration
-  # options are documented and commented below. For a complete reference,
-  # please see the online documentation at vagrantup.com.
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure(2) do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
 
-  # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
-  config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  config.vm.box = "petecheslock/ubuntu-trusty-chef"
 
-  # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "lucid32"
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
 
-  # Assign this VM to a host only network IP, allowing you to access it
-  # via the IP.
-  if (defined?(NFS) && NFS) || defined?(ADDRESS)
-    config.vm.network defined?(ADDRESS) ? ADDRESS : "33.33.39.20"
-  end
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
 
-  # Forward a port from the guest to the host, which allows for outside
-  # computers to access the VM, whereas host only networking does not.
-  config.vm.forward_port 80, defined?(HTTP_PORT) ? HTTP_PORT : 8080
-  config.vm.forward_port 3000, defined?(RAILS_PORT) ? RAILS_PORT : 8000
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  # config.vm.network "public_network"
 
   # Share an additional folder to the guest VM. The first argument is
-  # an identifier, the second is the path on the guest to mount the
-  # folder, and the third is the path on the host to the actual folder.
-  config.vm.share_folder "vagrant", "/vagrant", ".", :nfs => defined?(NFS) ? NFS : false
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
 
-  # Share a folder with the guest VM for storing downloaded packages. This
-  # makes rebuilding VMs faster by only downloading packages if needed.
-  # NOTE: This is only enabled if using NFS because `apt-get` fails with
-  # "Couldn't make mmap" and "Unable to munmap" errors when using the default
-  # sharing mechanism.
-  if defined?(NFS) && NFS
-    require "fileutils"
-    apt_cache = "tmp/vagrant_apt_cache"
-    FileUtils.mkdir_p("#{apt_cache}/archives/partial")
-    config.vm.share_folder "vagrant-apt-cache", "/var/cache/apt", apt_cache, :nfs => true
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+  #
+  # config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+  #
+  #   # Customize the amount of memory on the VM:
+  #   vb.memory = "1024"
+  # end
+  #
+  # View the documentation for the provider you are using for more
+  # information on available options.
+
+  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
+  # such as FTP and Heroku are also available. See the documentation at
+  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
+  # config.push.define "atlas" do |push|
+  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
+  # end
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  config.vm.provision "chef_solo" do |chef|
+  	chef.add_recipe "git"
   end
 
-  # Use more memory so badly-designed programs like Bundler can work.
-  config.vm.customize do |vm|
-    vm.memory_size = defined?(MEMORY) ? MEMORY : 512
-  end
-
-  # Enable provisioning with chef solo, specifying a cookbooks path (relative
-  # to this Vagrantfile), and adding some recipes and/or roles.
-  config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = "vagrant/cookbooks"
-    chef.add_recipe "vagrant"
-  end
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   sudo apt-get update
+  #   sudo apt-get install -y apache2
+  # SHELL
 end
