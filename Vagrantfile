@@ -65,7 +65,8 @@ Vagrant.configure(2) do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "chef_solo" do |chef|
-  	chef.add_recipe "git"
+  	chef.add_recipe "core"
+  	chef.add_recipe "ruby"
   end
 
   # config.vm.provision "shell", inline: <<-SHELL
